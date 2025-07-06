@@ -28,21 +28,34 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const voluntrixCollection = client.db('voluntrixDB').collection('voluntrix');
+    const beAVolunteerCollection = client.db('voluntrixDB').collection('beAVolunteer')
     // add volunteer
-    app.post('/add-volunteer', async(req, res) => {
-        const voluntrixData = req.body;
-        const result = await voluntrixCollection.insertOne(voluntrixData);
-        res.send(result);
+    app.post('/add-volunteer', async (req, res) => {
+      const voluntrixData = req.body;
+      const result = await voluntrixCollection.insertOne(voluntrixData);
+      res.send(result);
     })
-    app.get('/volunteer', async(req, res) => {
+    app.get('/volunteer', async (req, res) => {
       const result = await voluntrixCollection.find().toArray();
       res.send(result)
     })
     // get volunteer details
-    app.get('/volunteer-details/:id', async(req, res) => {
+    app.get('/volunteer-details/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await voluntrixCollection.findOne(query);
+      res.send(result);
+    })
+    app.post('/be-a-volunteer', async (req, res) => {
+      const beAVolunteerData = req.body;
+      const result = await beAVolunteerCollection.insertOne(beAVolunteerData);
+      res.send(result);
+    })
+    // specific user email volunteer
+    app.get('/volunteer/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { 'admin.email': email };
+      const result = await voluntrixCollection.find(query).toArray();
       res.send(result);
     })
     // Send a ping to confirm a successful connection
@@ -55,11 +68,11 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.get('/', async(req, res) => {
-    res.send(
-        'volumtrix server is running'
-    )
+app.get('/', async (req, res) => {
+  res.send(
+    'volumtrix server is running'
+  )
 })
 app.listen(port, () => {
-    console.log(`server running port ${port}`);
+  console.log(`server running port ${port}`);
 })
