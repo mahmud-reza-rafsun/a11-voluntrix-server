@@ -95,6 +95,18 @@ async function run() {
       const result = await beAVolunteerCollection.deleteOne(query);
       res.send(result);
     })
+    // all volunteer 
+    app.get('/all-volunteer', async(req, res) => {
+      const search = req.query.search;
+      let filter = {
+        title: {
+          $regex: search,
+          $options: 'i',
+        }
+      }
+      const result = await voluntrixCollection.find(filter).toArray();
+      res.send(result)
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
