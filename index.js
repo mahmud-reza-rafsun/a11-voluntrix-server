@@ -75,6 +75,13 @@ async function run() {
       const result = await voluntrixCollection.updateOne(query, updatedDoc, filter)
       res.send(result);
     })
+    // delete volunteer
+    app.delete('/delete-volunteer/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await voluntrixCollection.deleteOne(query);
+      res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
