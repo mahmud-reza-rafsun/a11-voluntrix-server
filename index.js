@@ -46,6 +46,7 @@ async function run() {
       const result = await voluntrixCollection.findOne(query);
       res.send(result);
     })
+    // be a volunteer post
     app.post('/be-a-volunteer', async (req, res) => {
       const beAVolunteerData = req.body;
       const result = await beAVolunteerCollection.insertOne(beAVolunteerData);
@@ -80,6 +81,18 @@ async function run() {
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
       const result = await voluntrixCollection.deleteOne(query);
+      res.send(result);
+    })
+    // be a volunteer get
+    app.get('/be-a-volunteer', async(req, res) => {
+      const result = await beAVolunteerCollection.find().toArray();
+      res.send(result)
+    })
+    // delete my volunteer request
+    app.delete('/delete-my-volunteer/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await beAVolunteerCollection.deleteOne(query);
       res.send(result);
     })
     // Send a ping to confirm a successful connection
