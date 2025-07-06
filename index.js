@@ -58,6 +58,23 @@ async function run() {
       const result = await voluntrixCollection.find(query).toArray();
       res.send(result);
     })
+    app.get('/update-volunteer/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await voluntrixCollection.findOne(query);
+      res.send(result);
+    })
+    app.put('/update-volunteer/:id', async(req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body
+      const filter = {upsert: true};
+      const query = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: updatedData,
+      }
+      const result = await voluntrixCollection.updateOne(query, updatedDoc, filter)
+      res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
