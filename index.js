@@ -45,7 +45,7 @@ async function run() {
       res.send(result)
     })
     // get volunteer details
-    app.get('/volunteer-details/:id', verifyToken, async (req, res) => {
+    app.get('/volunteer-details/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await voluntrixCollection.findOne(query);
@@ -106,7 +106,7 @@ async function run() {
     })
     // all volunteer 
     app.get('/all-volunteer', async (req, res) => {
-      const search = req.query.search;
+      let search = req.query.search;
       let filter = {
         title: {
           $regex: search,
