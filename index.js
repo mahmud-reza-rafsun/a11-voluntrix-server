@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 require('dotenv').config();
 const app = express();
@@ -12,6 +13,7 @@ app.use(cors());
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const cookieParser = require('cookie-parser');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.BD_PASS}@cluster0.uuac6m8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -26,9 +28,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
+
     const voluntrixCollection = client.db('voluntrixDB').collection('voluntrix');
     const beAVolunteerCollection = client.db('voluntrixDB').collection('beAVolunteer')
+
+  
     // add volunteer
     app.post('/add-volunteer', async (req, res) => {
       const voluntrixData = req.body;
@@ -40,7 +45,7 @@ async function run() {
       res.send(result)
     })
     // get volunteer details
-    app.get('/volunteer-details/:id', async (req, res) => {
+    app.get('/volunteer-details/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await voluntrixCollection.findOne(query);
@@ -55,6 +60,10 @@ async function run() {
     // specific user email volunteer
     app.get('/volunteer/:email', async (req, res) => {
       const email = req.params.email;
+      const decodedEmail = req.user.email;
+      if (decodedEmail !== email) {
+        return res.status(401).send({ message: 'unAuthorize access' })
+      }
       const query = { 'admin.email': email };
       const result = await voluntrixCollection.find(query).toArray();
       res.send(result);
@@ -65,11 +74,11 @@ async function run() {
       const result = await voluntrixCollection.findOne(query);
       res.send(result);
     })
-    app.put('/update-volunteer/:id', async(req, res) => {
+    app.put('/update-volunteer/:id', async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body
-      const filter = {upsert: true};
-      const query = {_id: new ObjectId(id)};
+      const filter = { upsert: true };
+      const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: updatedData,
       }
@@ -77,26 +86,26 @@ async function run() {
       res.send(result);
     })
     // delete volunteer
-    app.delete('/delete-volunteer/:id', async(req, res) => {
+    app.delete('/delete-volunteer/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await voluntrixCollection.deleteOne(query);
       res.send(result);
     })
     // be a volunteer get
-    app.get('/be-a-volunteer', async(req, res) => {
+    app.get('/be-a-volunteer', async (req, res) => {
       const result = await beAVolunteerCollection.find().toArray();
       res.send(result)
     })
     // delete my volunteer request
-    app.delete('/delete-my-volunteer/:id', async(req, res) => {
+    app.delete('/delete-my-volunteer/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await beAVolunteerCollection.deleteOne(query);
       res.send(result);
     })
     // all volunteer 
-    app.get('/all-volunteer', async(req, res) => {
+    app.get('/all-volunteer', async (req, res) => {
       const search = req.query.search;
       let filter = {
         title: {
